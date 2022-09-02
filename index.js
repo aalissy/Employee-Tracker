@@ -64,6 +64,12 @@ const userChoices = [
             "View All Departments",
             "Add Department",
             "Update Employee Manager",
+            "View Employees By Manager",
+            "View Employees By Department",
+            "Delete Department",
+            "Delete Role",
+            "Delete Employee",
+            "View Department Budget",
             "Quit",
         ],
     },
@@ -105,6 +111,24 @@ function init() {
                 break;
             case "Update Employee Manager":
                 updateEmployeeManager()
+                break;
+            case "View Employees By Manager":
+                viewEmployeesByManager();
+                break;
+            case "View Employees By Department":
+                viewEmployeesByDepartment();
+                break;
+            case "Delete Department":
+                deleteDepartment();
+                break;
+            case "Delete Role":
+                deleteRole();
+                break;
+            case "Delete Employee":
+                deleteEmployee();
+                break;
+            case "View Department Budget":
+                viewDepartmentBudget();
                 break;
                 // Quit ends the connection
             case "Quit":
