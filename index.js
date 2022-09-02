@@ -417,3 +417,168 @@ function addDepartment() {
         init();
     });
 }
+
+function updateEmployeeManager () {
+    envaccess.query(`SELECT * FROM employee;`, (err, data) => {
+          if (err) throw err;
+          let employees = data.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
+        inquirer.prompt([
+            {
+                name: "updatedEmployee",
+                type: "list",
+                message: "Which employee is getting a new manager?",
+                choices: employees
+            },
+            {
+                name: "newManager",
+                type: "list",
+                message: "Who should be the employee's new manager?",
+                choices: employees
+            },
+        ]).then((answer) => {
+            envaccess.query(`UPDATE employee SET ? WHERE ?`, 
+            [
+                {
+                    manager_id: answer.newManager,
+                },
+                {
+                    employee_id: answer.updatedEmployee,
+                },
+            ], 
+            (err, res) => {
+                if (err) throw err;
+                init();
+            })
+        })
+    })
+};
+
+function viewEmployeesByManager () {
+    envaccess.query(`SELECT employee_id, first_name, last_name FROM employee;`, (err, data) => {
+        if (err) throw err;
+        let managers = data.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id }));
+        inquirer.prompt([
+            {
+            name: "manager",
+            type: "list",
+            message: "Which manager would you like to see the employee's of?",
+            choices: managers   
+            },
+        ]).then((response) => {
+            envaccess.query(`SELECT e.first_name, e.last_name, e.employee_id, role.title, department.department_name, role.salary, CONCAT(m.first_name, ' ', m.last_name) manager FROM employee m RIGHT JOIN employee e ON e.manager_id = m.employee_id JOIN role ON e.role_id = role.role_id JOIN department ON department.department_id = role.department_id WHERE e.manager_id = ${response.manager};`, 
+            (err, data) => {
+                if (err) throw err;
+                console.table(data);
+                init();
+            })
+        })
+    })
+}
+
+function viewEmployeesByDepartment() {
+    envaccess.query(`SELECT employee.employee_id, employee.first_name, employee.last_name, department.department_name FROM employee LEFT JOIN role ON employee.role_id = role.role_id LEFT JOIN department ON role.department_id = department.department_id ORDER BY employee.employee_id`, function (err, data) {
+        if (err) throw err;
+        console.table(data);
+        init();
+    });
+}
+
+function deleteDepartment() {
+    envaccess.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, data) => {
+        if (err) throw err;
+        let departments = data.map(department => ({name: department.department_name, value: department.department_id}));
+        inquirer.prompt([
+            {
+                name: "department",
+                type: "list",
+                message: "Which department are you deleting?",
+                choices: departments
+            },
+        ]).then((answer) => {
+            envaccess.query(`DELETE FROM department WHERE ?`, [
+                {
+                    department_id: answer.department
+                },
+            ],
+            (err, data) => {
+                if (err) throw err;
+                init();
+            })
+        })
+    })
+}
+
+function deleteRole() {
+    envaccess.query(`SELECT * FROM role ORDER BY role_id ASC;`, (err, data) => {
+        if (err) throw err;
+        let roles = data.map(role => ({name: role.title, value: role.role_id}));
+        inquirer.prompt([
+            {
+                name: "role",
+                type: "list",
+                message: "Which role are you deleting?",
+                choices: roles
+            },
+        ]).then((answer) => {
+            envaccess.query(`DELETE FROM role WHERE ?`, [
+                {
+                    role_id: answer.role,
+                },
+            ], (err, data) => {
+                if (err) throw err;
+                init();
+            })
+        })
+    })
+}
+
+function deleteEmployee() {
+    envaccess.query(`SELECT * FROM employee ORDER BY employee_id ASC;`, (err, data) => {
+        if (err) throw err;
+        let employees = data.map(employee => ({name: employee.first_name + ' ' + employee.last_name, value: employee.employee_id}));
+        inquirer.prompt([
+            {
+                name: "employee",
+                type: "list",
+                message: "Which employee are you deleting?",
+                choices: employees
+            },
+        ]).then((answer) => {
+            envaccess.query(`DELETE FROM employee WHERE ?`, 
+            [
+                {
+                    employee_id: answer.employee,
+                },
+            ],
+            (err, data) => {
+                if (err) throw err;
+                init();
+            })
+        })
+    })
+}
+
+function viewDepartmentBudget() {
+    envaccess.query(`SELECT * FROM department ORDER BY department_id ASC;`, (err, data) => {
+        if (err) throw err;
+        let departments = data.map(department => ({name: department.department_name, value: department.department_id}));
+        inquirer.prompt([
+            {
+                name: "department",
+                type: "list",
+                message: "Which department would you like to view the salary of?",
+                choices: departments
+            },
+        ]).then((answer) => {
+            envaccess.query(`SELECT department_id, SUM(role.salary) AS total_salary FROM role WHERE ?`, [
+                {
+                    department_id: answer.department
+                },
+            ], (err, data) => {
+                if (err) throw err;
+                console.table(data);
+                init();
+            })
+        })
+    })
+}
